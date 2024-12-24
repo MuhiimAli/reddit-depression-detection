@@ -17,6 +17,6 @@ if __name__ == "__main__":
 
     control_embeddings = extract_roberta_embeddings(clean_control)
    
-    symptom_embeddings = {}
+    symptom_embeddings = {
     for symptom, df in clean_symptoms.items():
         symptom_embeddings[symptom] = extract_roberta_embeddings(df)
