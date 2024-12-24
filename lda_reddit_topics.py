@@ -38,8 +38,8 @@ def train_reddit_topic_model(clean_control, clean_symptoms, num_topics=10):
     )
     
     # Print topics
-    print("\nTop 10 words in each topic:")
-    for idx, topic in lda_model.print_topics(-1):
-        print(f'Topic {idx}: {topic}')
+    # print("\nTop 10 words in each topic:")
+    # for idx, topic in lda_model.print_topics(-1):
+    #     print(f'Topic {idx}: {topic}')
     
     return lda_model, dictionary, corpus

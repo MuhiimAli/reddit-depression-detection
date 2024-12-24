@@ -22,19 +22,21 @@ depression_subreddits = ["Anger",
     "AdultSelfHarm", "selfharm", "SuicideWatch",
     "Guilt", "Pessimism", "selfhelp", "whatsbotheringyou"
 ]
-anxiety_reddits = ["Anxiety", "AnxietyDepression", "HealthAnxiety", "PanicAttack"]
 anger_reddits = ["Anger"]
 anhedonia_reddits = ["anhedonia", "DeadBedrooms"]
-concentration_deficit_subreddits = ["DecisionMaking", "shouldi"]
+anxiety_reddits = ["Anxiety", "AnxietyDepression", "HealthAnxiety", "PanicAttack"]
 disordered_eating_subreddits = ["bingeeating", "BingeEatingDisorder", "EatingDisorders", "eating_disorders", "EDAnonymous"]
-fatigue_subreddits = ["chronicfatigue", "Fatigue"]
 loneliness_subreddits = ["ForeverAlone", "lonely"]
 sad_mood_subreddits = ["cry", "grief", "sad", "Sadness"]
 self_loathing_subreddits = ["AvPD", "SelfHate", "selfhelp", "socialanxiety", "whatsbotheringyou"]
 sleep_problem_subreddits = ["insomnia", "sleep"]
 somatic_complaint_subreddits = ["cfs", "ChronicPain", "Constipation", "EssentialTremor", "headaches", "ibs", "tinnitus"]
-suicidal_thoughts_subreddits = ["AdultSelfHarm", "selfharm", "SuicideWatch"]
 worthlessness_subreddits = ["Guilt", "Pessimism", "selfhelp", "whatsbotheringyou"]
+
+concentration_deficit_subreddits = ["DecisionMaking", "shouldi"]
+suicidal_thoughts_subreddits = ["AdultSelfHarm", "selfharm", "SuicideWatch"]
+fatigue_subreddits = ["chronicfatigue", "Fatigue"] #TODO: Don't add to evaluation
+
 
 
 
@@ -64,19 +66,20 @@ def dataset_generation(use_cache=True):
         os.makedirs(cache_dir)
     
     symptom_datasets = {
-        'anxiety': anxiety_reddits,
         'anger': anger_reddits,
         'anhedonia': anhedonia_reddits,
-        'concentration_deficit': concentration_deficit_subreddits,
+        'anxiety': anxiety_reddits,
         'disordered_eating': disordered_eating_subreddits,
-        'fatigue': fatigue_subreddits,
         'loneliness': loneliness_subreddits,
         'sad_mood': sad_mood_subreddits,
         'self_loathing': self_loathing_subreddits,
         'sleep_problems': sleep_problem_subreddits,
         'somatic_complaints': somatic_complaint_subreddits,
+        'worthlessness': worthlessness_subreddits,
+        'concentration_deficit': concentration_deficit_subreddits,
+        'fatigue': fatigue_subreddits,
         'suicidal_thoughts': suicidal_thoughts_subreddits,
-        'worthlessness': worthlessness_subreddits
+        
     }
     
     # Update cache file paths
