@@ -22,6 +22,25 @@ depression_subreddits = ["Anger",
     "AdultSelfHarm", "selfharm", "SuicideWatch",
     "Guilt", "Pessimism", "selfhelp", "whatsbotheringyou"
 ]
+anxiety_reddits = ["Anxiety", "AnxietyDepression", "HealthAnxiety", "PanicAttack"]
+anger_reddits = ["Anger"]
+anhedonia_reddits = ["anhedonia", "DeadBedrooms"]
+concentration_deficit_subreddits = ["DecisionMaking", "shouldi"]
+disordered_eating_subreddits = ["bingeeating", "BingeEatingDisorder", "EatingDisorders", "eating_disorders", "EDAnonymous"]
+fatigue_subreddits = ["chronicfatigue", "Fatigue"]
+loneliness_subreddits = ["ForeverAlone", "lonely"]
+sad_mood_subreddits = ["cry", "grief", "sad", "Sadness"]
+self_loathing_subreddits = ["AvPD", "SelfHate", "selfhelp", "socialanxiety", "whatsbotheringyou"]
+sleep_problem_subreddits = ["insomnia", "sleep"]
+somatic_complaint_subreddits = ["cfs", "ChronicPain", "Constipation", "EssentialTremor", "headaches", "ibs", "tinnitus"]
+suicidal_thoughts_subreddits = ["AdultSelfHarm", "selfharm", "SuicideWatch"]
+worthlessness_subreddits = ["Guilt", "Pessimism", "selfhelp", "whatsbotheringyou"]
+
+
+
+
+
+
 
 
 
@@ -38,71 +57,92 @@ def load():
 
 
 def dataset_generation(use_cache=True):
-  """Build control and symptom datasets with improved performance"""
-  if use_cache and os.path.exists('anxiety_dataset.pkl') and os.path.exists('control_dataset.pkl') and os.path.exists('depression_dataset.pkl'):
-      print("Loading from cache...")
-      with open('anxiety_dataset.pkl', 'rb') as f:
-          anxiety_dataset = pickle.load(f)
-      with open('depression_dataset.pkl', 'rb') as f:
-          depression_posts = pickle.load(f)
-      with open('control_dataset.pkl', 'rb') as f:
-          control_dataset = pickle.load(f)
-      print(f"Anxiety dataset size: {len(anxiety_dataset)}")
-      print(f"depression dataset size: {len(depression_posts)}")
-      print(f"Control dataset size: {len(control_dataset)}")
-      print(f"Number of unique users in control: {len(control_dataset['author'].unique())}")
-      return anxiety_dataset, control_dataset, depression_posts
-  
-  df = load()
-  
-  # Create anxiety dataset (unchanged)
-  anxiety_dataset = df[df['subreddit'].isin([
-      'anxiety', 'AnxietyDepression', 'HealthAnxiety', 'PanicAttack'
-  ])]
-  
-  depression_mask = df['subreddit'].isin(depression_subreddits)
-  depression_posts = df[depression_mask]
-  
-  
-  user_first_depression_post = (
-      depression_posts
-      .groupby('author')['created_utc']
-      .min()
-  )
-  
-  # Create control dataset
-  df['first_depression_post'] = df['author'].map(user_first_depression_post)
-  cutoff_dates = df['first_depression_post'] - (180 * 24 * 60 * 60)
-  
-  control_mask = (
-      (~depression_mask) &
-      (df['created_utc'] < cutoff_dates) &
-      (~df['first_depression_post'].isna())
-  )
-  
-  control_dataset = df[control_mask]
-  
-  # Save to cache
-  if use_cache:
-      print("Saving to cache...")
-      with open('anxiety_dataset.pkl', 'wb') as f:
-          pickle.dump(anxiety_dataset, f)
-      with open('depression_dataset.pkl', 'wb') as f:
-          pickle.dump(depression_posts, f)
-      with open('control_dataset.pkl', 'wb') as f:
-          pickle.dump(control_dataset, f)
-  
-  print(f"Anxiety dataset size: {len(anxiety_dataset)}")
-  print(f"depression dataset size: {len(depression_posts)}")
-  print(f"Control dataset size: {len(control_dataset)}")
-  print(f"Number of unique users in control: {len(control_dataset['author'].unique())}")
-  
-  return anxiety_dataset, control_dataset, depression_posts
-
-
-
-
-
+    """Build control and symptom datasets with improved performance"""
+    # Create cache directory if it doesn't exist
+    cache_dir = 'cache_files'
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
+    
+    symptom_datasets = {
+        'anxiety': anxiety_reddits,
+        'anger': anger_reddits,
+        'anhedonia': anhedonia_reddits,
+        'concentration_deficit': concentration_deficit_subreddits,
+        'disordered_eating': disordered_eating_subreddits,
+        'fatigue': fatigue_subreddits,
+        'loneliness': loneliness_subreddits,
+        'sad_mood': sad_mood_subreddits,
+        'self_loathing': self_loathing_subreddits,
+        'sleep_problems': sleep_problem_subreddits,
+        'somatic_complaints': somatic_complaint_subreddits,
+        'suicidal_thoughts': suicidal_thoughts_subreddits,
+        'worthlessness': worthlessness_subreddits
+    }
+    
+    # Update cache file paths
+    all_cached = all(os.path.exists(os.path.join(cache_dir, f'{symptom}_dataset.pkl')) 
+                    for symptom in symptom_datasets.keys())
+    
+    if use_cache and all_cached and os.path.exists(os.path.join(cache_dir, 'control_dataset.pkl')):
+        print("Loading from cache...")
+        symptom_dfs = {}
+        for symptom in symptom_datasets.keys():
+            cache_path = os.path.join(cache_dir, f'{symptom}_dataset.pkl')
+            with open(cache_path, 'rb') as f:
+                symptom_dfs[symptom] = pickle.load(f)
+                # print(f"{symptom} dataset size: {len(symptom_dfs[symptom])}")
+        
+        control_path = os.path.join(cache_dir, 'control_dataset.pkl')
+        with open(control_path, 'rb') as f:
+            control_dataset = pickle.load(f)
+            # print(f"Control dataset size: {len(control_dataset)}")
+            # print(f"Number of unique users in control: {len(control_dataset['author'].unique())}")
+        
+        return symptom_dfs, control_dataset
+    
+    df = load()
+    
+    # Create symptom datasets
+    symptom_dfs = {}
+    for symptom, subreddits in symptom_datasets.items():
+        symptom_dfs[symptom] = df[df['subreddit'].isin(subreddits)]
+        # print(f"{symptom} dataset size: {len(symptom_dfs[symptom])}")
+    
+    depression_mask = df['subreddit'].isin(depression_subreddits)
+    depression_posts = df[depression_mask]
+    
+    user_first_depression_post = (
+        depression_posts
+        .groupby('author')['created_utc']
+        .min()
+    )
+    
+    df['first_depression_post'] = df['author'].map(user_first_depression_post)
+    cutoff_dates = df['first_depression_post'] - (180 * 24 * 60 * 60)
+    
+    control_mask = (
+        (~depression_mask) &
+        (df['created_utc'] < cutoff_dates) &
+        (~df['first_depression_post'].isna())
+    )
+    
+    control_dataset = df[control_mask]
+    
+    if use_cache:
+        print("Saving to cache...")
+        for symptom, dataset in symptom_dfs.items():
+            cache_path = os.path.join(cache_dir, f'{symptom}_dataset.pkl')
+            with open(cache_path, 'wb') as f:
+                pickle.dump(dataset, f)
+        
+        control_path = os.path.join(cache_dir, 'control_dataset.pkl')
+        with open(control_path, 'wb') as f:
+            pickle.dump(control_dataset, f)
+    
+    # print(f"Control dataset size: {len(control_dataset)}")
+    # print(f"Number of unique users in control: {len(control_dataset['author'].unique())}")
+    
+    return symptom_dfs, control_dataset
 def tokenize_text(text):
     """Tokenize a single text using happiestfuntokenizing"""
     tokenizer = Tokenizer()
@@ -115,25 +155,22 @@ def tokenize_text(text):
 
 def tokenize(dataset, use_cache=True, cache_prefix=''):
     """Tokenize dataset using happiestfuntokenizing"""
-    cache_file = f'{cache_prefix}_tokenized.pkl'
+    cache_dir = 'cache_files'
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
+        
+    cache_file = os.path.join(cache_dir, f'{cache_prefix}_tokenized.pkl')
     
     if use_cache and os.path.exists(cache_file):
         print(f"Loading tokenized {cache_prefix} from cache...")
         with open(cache_file, 'rb') as f:
             return pickle.load(f)
 
-    print(f"Tokenizing {cache_prefix} dataset...")
+    # print(f"Tokenizing {cache_prefix} dataset...")
     
-    # Create a copy to avoid modifying the original
     tokenized_df = dataset.copy()
-    
-    # Apply tokenization to 'text' column
     tokenized_df['tokenized_text'] = tokenized_df['text'].apply(tokenize_text)
-    
-    # Calculate token count
     tokenized_df['token_count'] = tokenized_df['tokenized_text'].apply(len)
-    
-    # Remove empty posts
     tokenized_df = tokenized_df[tokenized_df['token_count'] > 0]
     
     if use_cache:
@@ -144,15 +181,60 @@ def tokenize(dataset, use_cache=True, cache_prefix=''):
     return tokenized_df
 
 
+def stop_words(control_df):
+    """Find top 100 words from control dataset to use as stop words"""
+    print("Generating stop words from control dataset...")
+    
+    # Flatten all tokens from control dataset into a single list
+    all_tokens = []
+    for tokens in control_df['tokenized_text']:
+        all_tokens.extend(tokens)
+    
+    # Count token frequencies
+    token_counts = pd.Series(all_tokens).value_counts()
+    
+    # Get top 100 most frequent tokens
+    top_100_words = set(token_counts.head(100).index.tolist())
+    # print(f"Top 100 stop words: {top_100_words}")
+    
+    return top_100_words
+def remove_stop_words(df, stop_words_set):
+    """Remove stop words from a dataframe's tokenized_text"""
+    # Create a copy to avoid modifying the original
+    clean_df = df.copy()
+    
+    # Remove stop words from tokenized_text
+    clean_df['tokenized_text'] = clean_df['tokenized_text'].apply(
+        lambda tokens: [token for token in tokens if token not in stop_words_set]
+    )
+    
+    # Update token count
+    clean_df['token_count'] = clean_df['tokenized_text'].apply(len)
+    
+    # Remove empty posts after stop word removal
+    clean_df = clean_df[clean_df['token_count'] > 0]
+    
+    return clean_df
 
-def stop_words():
-  """Find top 100 words from Reddit dataset to use as stop words"""
-  pass
-
-if __name__ == "__main__":
-  anxiety_df, control_df, depression_df = dataset_generation()
-  df = load()
-  # print(df[:10])
-  tokenize(anxiety_df, cache_prefix = "anxiety_df")
-  tokenize(control_df, cache_prefix = "control_df")
-  tokenize(depression_df, cache_prefix = "depression_df")
+def get_clean_datasets():
+    symptom_datasets, control_df = dataset_generation()
+    
+    # Tokenize datasets
+    print("Tokenizing datasets...")
+    tokenized_control = tokenize(control_df, cache_prefix="control_df")
+    tokenized_symptoms = {}
+    for symptom, df in symptom_datasets.items():
+        tokenized_symptoms[symptom] = tokenize(df, cache_prefix=f"{symptom}_df")
+    
+    # Generate stop words from control dataset and remove from all datasets
+    stop_words_set = stop_words(tokenized_control)
+    
+    clean_control = remove_stop_words(tokenized_control, stop_words_set)
+    # print(f"Control dataset size after stop word removal: {len(clean_control)}")
+    
+    clean_symptoms = {}
+    for symptom, df in tokenized_symptoms.items():
+        clean_symptoms[symptom] = remove_stop_words(df, stop_words_set)
+        # print(f"{symptom} dataset size after stop word removal: {len(clean_symptoms[symptom])}")
+    return clean_control, clean_symptoms
+    
