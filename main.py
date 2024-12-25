@@ -1,49 +1,63 @@
 
 from preprocessing import get_clean_datasets, dataset_generation
-from lda_reddit_topics import train_reddit_topic_model
+from lda_reddit_topics import train_reddit_topic_model, get_lda_results
 from roberta_embeddings import extract_roberta_embeddings
 import os
 from evaluation import train_rf_models
 import numpy as np
+
+def compare_results(my_results, ta_results):
+   """Compare my results with TA solution results"""
+   ta_results = {
+       'anger': {'lda': 0.794, 'roberta': 0.928},
+       'anhedonia': {'lda': 0.906, 'roberta': 0.956}, 
+       'anxiety': {'lda': 0.837, 'roberta': 0.952},
+       'disordered_eating': {'lda': 0.905, 'roberta': 0.952},
+       'loneliness': {'lda': 0.806, 'roberta': 0.907},
+       'sad_mood': {'lda': 0.788, 'roberta': 0.919},
+       'self_loathing': {'lda': 0.815, 'roberta': 0.922},
+       'sleep_problems': {'lda': 0.909, 'roberta': 0.956},
+       'somatic_complaints': {'lda': 0.880, 'roberta': 0.925},
+       'worthlessness': {'lda': 0.700, 'roberta': 0.897}
+   }
+
+   for symptom in ta_results:
+       if symptom in my_results:
+           ta_lda = ta_results[symptom]['lda'] 
+           ta_roberta = ta_results[symptom]['roberta']
+           my_lda = my_results[symptom]['lda']
+           my_roberta = my_results[symptom]['roberta']
+           
+           print(f"\n{symptom}:")
+           print(f"LDA: {my_lda:.3f} (TA: {ta_lda:.3f}) {'PASS' if ta_lda-0.2 <= my_lda <= ta_lda+0.2 else 'FAIL'}")
+           print(f"RoBERTa: {my_roberta:.3f} (TA: {ta_roberta:.3f}) {'PASS' if ta_roberta-0.2 <= my_roberta <= ta_roberta+0.2 else 'FAIL'}")
+
 if __name__ == "__main__":
-    # Previous code remains the same until after stop words removal
-    clean_control, clean_symptoms = get_clean_datasets()
-    
-    # Train LDA model
-    lda_model, dictionary, corpus = train_reddit_topic_model(clean_control, clean_symptoms)
+   # Get datasets
+#    clean_control, clean_symptoms = get_clean_datasets()
 
-    control_docs_idx = len(clean_control)
-
-# Get LDA features for control
-    num_topics = lda_model.num_topics  # Should be 200 based on your config
-
-    control_lda_features = np.zeros((len(corpus[:control_docs_idx]), num_topics))
-    for i, doc in enumerate(corpus[:control_docs_idx]):
-        for topic_id, weight in lda_model.get_document_topics(doc):
-            control_lda_features[i, topic_id] = weight
-
-    symptom_lda_features = {}
-    start_idx = control_docs_idx
-    for symptom, df in clean_symptoms.items():
-        end_idx = start_idx + len(df)
-        feature_matrix = np.zeros((len(df), num_topics))
-        for i, doc in enumerate(corpus[start_idx:end_idx]):
-            for topic_id, weight in lda_model.get_document_topics(doc):
-                feature_matrix[i, topic_id] = weight
-        symptom_lda_features[symptom] = feature_matrix
-        start_idx = end_idx
-    
-    # Save the trained model and dictionary (optional)
-    cache_dir = 'cache_files'
-    lda_model.save(os.path.join(cache_dir, 'lda_model'))
-    dictionary.save(os.path.join(cache_dir, 'lda_dictionary'))
-
-    # control_embeddings = extract_roberta_embeddings(clean_control)
    
-    # symptom_embeddings = {}
-    # for symptom, df in clean_symptoms.items():
-    #     symptom_embeddings[symptom] = extract_roberta_embeddings(df)
-
-    # results = train_rf_models(control_embeddings, symptom_embeddings)
-    results = train_rf_models(control_lda_features, symptom_lda_features)
-
+#    # Get LDA features
+#    lda_model, dictionary, corpus = train_reddit_topic_model(clean_control, clean_symptoms)
+#    lda_results = get_lda_results(lda_model, dictionary, corpus, clean_control, clean_symptoms)
+   
+    control, symptoms = dataset_generation()
+     # Get RoBERTa features 
+    control_embeddings = extract_roberta_embeddings(control, cache_prefix='control')
+    symptom_embeddings = {}
+    for symptom, df in symptoms.items():
+        symptom_embeddings[symptom] = extract_roberta_embeddings(df, cache_prefix=symptom)
+   
+   # Train and evaluate models
+#    lda_scores = train_rf_models(lda_results["control"], lda_results["symptoms"])
+    roberta_scores = train_rf_models(control_embeddings, symptom_embeddings)
+   
+   # Compare with TA solution results
+    results = {
+       symptom: {
+           "lda": lda_scores[symptom]["test_scores"].mean(),
+           "roberta": roberta_scores[symptom]["test_scores"].mean()
+       }
+       for symptom in clean_symptoms.keys()
+   }
+    compare_results(results, paper_results)

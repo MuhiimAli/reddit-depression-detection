@@ -6,28 +6,45 @@ The objective of this project is to train a random forest classifier to predict 
 
 
 ## Dataset Generation
+Due to memory limitations, we reduced the size of their dataset. You can access our reduced dataset [here](https://drive.google.com/file/d/1h03YG6H4lW-hwPgicSnfwtplUhxgN5WY/view?usp=sharing)
+
 ### control dataset
--  We create the control dataset by collecting non-mental health posts from authors at least 180 days before their first post in a depression-related subreddit.
+-  We create the control dataset by collecting non-mental health posts from same authors at least 180 days before their first post in a depression-related subreddit.
 ### symptom dataset
-For each system, we create dataset by collecting the posts from their respective subreddits. as shown in the table below.
+- For each symptom, we create a dataset by collecting posts from their respective subreddits, as shown in the table below.
+![Table1](table1.png)
 
 
-## Preprocessing Plus Extracting Features
-Two ways we extracted the features
-1. LDA: 
-We first tokenize the entire dataset using the 
+## Preprocessing and Feature Extraction  
 
-The LDA Reddit topics portion of the paper uses an additional preprocessing step, i.e. removing top 100 most frequent words from the dataset.
-The paper uses happierfuntokenizer, use happiestfuntokenizing · PyPI instead.
+We used two methods to extract features:  
 
-The paper uses MALLET for the LDA implementation. We use instead Gensim’s LdaMulticore model, as it will train much faster than SKLearn’s implementation.
+### 1. LDA (Latent Dirichlet Allocation)  
+- **Tokenization**: The dataset was tokenized using the `happiestfuntokenizing` library.  
+- **Stopword Removal**: The top 100 most frequent words were removed from the dataset to reduce noise.  
+- **LDA Implementation**:  
+  - The paper uses MALLET for LDA implementation.  
+  - We opted for Gensim’s `LdaMulticore` model as it trains much faster than Scikit-learn’s implementation.  
 
-2. DistRoberta: 
-In the paper, the authors used the regular RoBERTa model with 12 transformer blocks and extracted the contextual embeddings from 10th layer for the downstream classification task. For this project, we use the DistilRoBERTa model, a distilled version of RoBERTa with only 6 transformer blocks (which makes it run faster), and we extract embeddings from the 5th layer for downstream classification. 
+### 2. DistilRoBERTa  
+- **Tokenization**: The dataset was tokenized using RoBERTa's `AutoTokenizer`.  
+- **Embedding Extraction**:  
+  - The paper utilized the full RoBERTa model with 12 transformer blocks, extracting contextual embeddings from the 10th layer for downstream classification.  
+  - For this project, we used DistilRoBERTa, a distilled version of RoBERTa with only 6 transformer blocks, enabling faster computation.  
+  - We extracted embeddings from the 5th layer for downstream classification tasks.  
 
 # Evaluation
-You are only running a singular symptom vs control (the paper also does symptom vs control+all other symptoms).
-E.g. Anger vs control, NOT anger vs control and anxiety and …
+We train 13 binary classifiers, each comparing a single symptom against control posts. Each symptom classifier is evaluated using:
+
+- 5-fold cross-validation
+- ROC-AUC scoring
+- Balanced classes (equal samples from control and symptom)
+
+Note: The original paper also evaluates symptom vs. control+other symptoms, which we omit.
+
+## Results
+compare my results to the papers results
+[insertgraphshere]
 
 
 

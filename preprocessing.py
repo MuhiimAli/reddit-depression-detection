@@ -22,6 +22,7 @@ depression_subreddits = ["Anger",
     "AdultSelfHarm", "selfharm", "SuicideWatch",
     "Guilt", "Pessimism", "selfhelp", "whatsbotheringyou"
 ]
+
 anger_reddits = ["Anger"]
 anhedonia_reddits = ["anhedonia", "DeadBedrooms"]
 anxiety_reddits = ["Anxiety", "AnxietyDepression", "HealthAnxiety", "PanicAttack"]
@@ -101,7 +102,7 @@ def dataset_generation(use_cache=True):
             # print(f"Control dataset size: {len(control_dataset)}")
             # print(f"Number of unique users in control: {len(control_dataset['author'].unique())}")
         
-        return symptom_dfs, control_dataset
+        return control_dataset, symptom_dfs
     
     df = load()
     
@@ -145,7 +146,7 @@ def dataset_generation(use_cache=True):
     # print(f"Control dataset size: {len(control_dataset)}")
     # print(f"Number of unique users in control: {len(control_dataset['author'].unique())}")
     
-    return symptom_dfs, control_dataset
+    return control_dataset, symptom_dfs
 def tokenize_text(text):
     """Tokenize a single text using happiestfuntokenizing"""
     tokenizer = Tokenizer()
@@ -203,7 +204,7 @@ def stop_words(control_df):
     return top_100_words
 def remove_stop_words(df, stop_words_set):
     """Remove stop words from a dataframe's tokenized_text"""
-    # Create a copy to avoid modifying the original
+    
     clean_df = df.copy()
     
     # Remove stop words from tokenized_text
@@ -220,9 +221,10 @@ def remove_stop_words(df, stop_words_set):
     return clean_df
 
 def get_clean_datasets():
-    symptom_datasets, control_df = dataset_generation()
+    control_df, symptom_datasets = dataset_generation()
     
     # Tokenize datasets
+    #TODO: some caching here
     print("Tokenizing datasets...")
     tokenized_control = tokenize(control_df, cache_prefix="control_df")
     tokenized_symptoms = {}

@@ -2,7 +2,7 @@ from gensim.models import LdaMulticore
 from gensim.corpora import Dictionary
 import logging
 import os
-
+import numpy as np
 def train_reddit_topic_model(clean_control, clean_symptoms, num_topics=10):
     """Train LDA model on the entire datasets"""
     print("Training LDA model...")
@@ -24,8 +24,7 @@ def train_reddit_topic_model(clean_control, clean_symptoms, num_topics=10):
     # Convert documents to bag of words
     corpus = [dictionary.doc2bow(doc) for doc in all_docs]
     
-    # Set up logging for model training
-    # logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+
     
     # Train LDA model using multicore implementation
     lda_model = LdaMulticore(
@@ -43,3 +42,27 @@ def train_reddit_topic_model(clean_control, clean_symptoms, num_topics=10):
     #     print(f'Topic {idx}: {topic}')
     
     return lda_model, dictionary, corpus
+
+def get_lda_results(lda_model, dictionary, corpus, clean_control, clean_symptoms):
+    control_docs_idx = len(clean_control)
+    num_topics = lda_model.num_topics
+
+    # Control features
+    control_features = np.zeros((len(corpus[:control_docs_idx]), num_topics))
+    for i, doc in enumerate(corpus[:control_docs_idx]):
+        for topic_id, weight in lda_model.get_document_topics(doc):
+            control_features[i, topic_id] = weight
+
+    # Symptom features
+    symptom_features = {}
+    start_idx = control_docs_idx
+    for symptom, df in clean_symptoms.items():
+        end_idx = start_idx + len(df)
+        features = np.zeros((len(df), num_topics))
+        for i, doc in enumerate(corpus[start_idx:end_idx]):
+            for topic_id, weight in lda_model.get_document_topics(doc):
+                features[i, topic_id] = weight
+        symptom_features[symptom] = features
+        start_idx = end_idx
+
+    return {"control": control_features, "symptoms": symptom_features}
