@@ -3,7 +3,7 @@ from gensim.corpora import Dictionary
 import logging
 import os
 import numpy as np
-def train_reddit_topic_model(clean_control, clean_symptoms, num_topics=10):
+def train_reddit_topic_model(clean_control, clean_symptoms, num_topics=200):
     """Train LDA model on the entire datasets"""
     print("Training LDA model...")
     
@@ -41,9 +41,10 @@ def train_reddit_topic_model(clean_control, clean_symptoms, num_topics=10):
     # for idx, topic in lda_model.print_topics(-1):
     #     print(f'Topic {idx}: {topic}')
     
-    return lda_model, dictionary, corpus
+    return lda_model, corpus
 
-def get_lda_results(lda_model, dictionary, corpus, clean_control, clean_symptoms):
+def get_lda_results(clean_control, clean_symptoms):
+    lda_model, corpus = train_reddit_topic_model(clean_control, clean_symptoms)
     control_docs_idx = len(clean_control)
     num_topics = lda_model.num_topics
 

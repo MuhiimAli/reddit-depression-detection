@@ -34,11 +34,8 @@ def compare_results(my_results):
 if __name__ == "__main__":
    # Get datasets
     clean_control, clean_symptoms = get_clean_datasets()
-
-   
 #   # Get LDA features
-    lda_model, dictionary, corpus = train_reddit_topic_model(clean_control, clean_symptoms)
-    lda_results = get_lda_results(lda_model, dictionary, corpus, clean_control, clean_symptoms)
+    lda_results = get_lda_results(clean_control, clean_symptoms)
    
     control, symptoms = dataset_generation()
      # Get RoBERTa features 

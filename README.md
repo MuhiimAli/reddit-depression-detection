@@ -6,7 +6,7 @@ The objective of this project is to train a random forest classifier to predict 
 
 
 ## Dataset Generation
-Due to memory limitations, we reduced the size of their dataset. You can access our reduced dataset [here](https://drive.google.com/file/d/1h03YG6H4lW-hwPgicSnfwtplUhxgN5WY/view?usp=sharing)
+Due to memory limitations, we reduced the size of their dataset. You can access our reduced dataset [here](https://drive.google.com/file/d/1h03YG6H4lW-hwPgicSnfwtplUhxgN5WY/view?usp=sharing).
 
 ### control dataset
 -  We create the control dataset by collecting non-mental health posts from same authors at least 180 days before their first post in a depression-related subreddit.
@@ -43,7 +43,18 @@ We train 13 binary classifiers, each comparing a single symptom against control 
 Note: The original paper also evaluates symptom vs. control+other symptoms, which we omit.
 
 
-## Ethical consideration
+## Ethical Considerations
+### Benefits
+- NLP can identify linguistic patterns associated with depression before clinical symptoms become severe, enabling earlier intervention and support.
+- Since discussing mental health problems remains taboo in many societies, some individuals may feel more comfortable expressing their mental health struggles online rather than in person.
+
+### Drawbacks/Potential Harms
+- As mentioned in the paper, many social media users have not explicitly consented to their data being used for mental health research.
+- NLP applications may misidentify depression signals, leading to unnecessary interventions and false positives.
+- NLP applications cannot fully replace human clinicians, as automated systems may miss important contextual nuances that trained professionals would recognize.
+- NLP models may perform differently across demographic groups and cultures, potentially leading to biased or inaccurate assessments.
+
+
 
 
 
