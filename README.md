@@ -54,6 +54,9 @@ Note: The original paper also evaluates symptom vs. control+other symptoms, whic
 - NLP applications cannot fully replace human clinicians, as automated systems may miss important contextual nuances that trained professionals would recognize.
 - NLP models may perform differently across demographic groups and cultures, potentially leading to biased or inaccurate assessments.
 
+## Future Plans
+Right now, it takes about 40 mins to train the random forest classifiers, I plan to reduce this runtime.
+
 
 
 
