@@ -77,9 +77,9 @@ def dataset_generation(use_cache=True):
         'sleep_problems': sleep_problem_subreddits,
         'somatic_complaints': somatic_complaint_subreddits,
         'worthlessness': worthlessness_subreddits,
-        'concentration_deficit': concentration_deficit_subreddits,
-        'fatigue': fatigue_subreddits,
-        'suicidal_thoughts': suicidal_thoughts_subreddits,
+        # 'concentration_deficit': concentration_deficit_subreddits,
+        # 'fatigue': fatigue_subreddits,
+        # 'suicidal_thoughts': suicidal_thoughts_subreddits,
         
     }
     

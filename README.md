@@ -42,11 +42,6 @@ We train 13 binary classifiers, each comparing a single symptom against control 
 
 Note: The original paper also evaluates symptom vs. control+other symptoms, which we omit.
 
-## Results
-compare my results to the papers results
-[insertgraphshere]
-
-
 
 ## Ethical consideration
 

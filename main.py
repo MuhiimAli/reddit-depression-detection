@@ -6,9 +6,9 @@ import os
 from evaluation import train_rf_models
 import numpy as np
 
-def compare_results(my_results, ta_results):
-   """Compare my results with TA solution results"""
-   ta_results = {
+def compare_results(my_results):
+    """Compare my results with TA solution results"""
+    ta_results = {
        'anger': {'lda': 0.794, 'roberta': 0.928},
        'anhedonia': {'lda': 0.906, 'roberta': 0.956}, 
        'anxiety': {'lda': 0.837, 'roberta': 0.952},
@@ -20,26 +20,25 @@ def compare_results(my_results, ta_results):
        'somatic_complaints': {'lda': 0.880, 'roberta': 0.925},
        'worthlessness': {'lda': 0.700, 'roberta': 0.897}
    }
-
-   for symptom in ta_results:
-       if symptom in my_results:
-           ta_lda = ta_results[symptom]['lda'] 
-           ta_roberta = ta_results[symptom]['roberta']
-           my_lda = my_results[symptom]['lda']
-           my_roberta = my_results[symptom]['roberta']
-           
-           print(f"\n{symptom}:")
-           print(f"LDA: {my_lda:.3f} (TA: {ta_lda:.3f}) {'PASS' if ta_lda-0.2 <= my_lda <= ta_lda+0.2 else 'FAIL'}")
-           print(f"RoBERTa: {my_roberta:.3f} (TA: {ta_roberta:.3f}) {'PASS' if ta_roberta-0.2 <= my_roberta <= ta_roberta+0.2 else 'FAIL'}")
+    for symptom in ta_results:
+        if symptom in my_results:
+            ta_lda = ta_results[symptom]['lda'] 
+            ta_roberta = ta_results[symptom]['roberta']
+            my_lda = my_results[symptom]['lda']
+            my_roberta = my_results[symptom]['roberta']
+            
+            print(f"\n{symptom}:")
+            print(f"LDA: {my_lda:.3f} (TA: {ta_lda:.3f}) {'PASS' if ta_lda-0.2 <= my_lda <= ta_lda+0.2 else 'FAIL'}")
+            print(f"RoBERTa: {my_roberta:.3f} (TA: {ta_roberta:.3f}) {'PASS' if ta_roberta-0.2 <= my_roberta <= ta_roberta+0.2 else 'FAIL'}")
 
 if __name__ == "__main__":
    # Get datasets
-#    clean_control, clean_symptoms = get_clean_datasets()
+    clean_control, clean_symptoms = get_clean_datasets()
 
    
-#    # Get LDA features
-#    lda_model, dictionary, corpus = train_reddit_topic_model(clean_control, clean_symptoms)
-#    lda_results = get_lda_results(lda_model, dictionary, corpus, clean_control, clean_symptoms)
+#   # Get LDA features
+    lda_model, dictionary, corpus = train_reddit_topic_model(clean_control, clean_symptoms)
+    lda_results = get_lda_results(lda_model, dictionary, corpus, clean_control, clean_symptoms)
    
     control, symptoms = dataset_generation()
      # Get RoBERTa features 
@@ -49,7 +48,7 @@ if __name__ == "__main__":
         symptom_embeddings[symptom] = extract_roberta_embeddings(df, cache_prefix=symptom)
    
    # Train and evaluate models
-#    lda_scores = train_rf_models(lda_results["control"], lda_results["symptoms"])
+    lda_scores = train_rf_models(lda_results["control"], lda_results["symptoms"])
     roberta_scores = train_rf_models(control_embeddings, symptom_embeddings)
    
    # Compare with TA solution results
@@ -60,4 +59,4 @@ if __name__ == "__main__":
        }
        for symptom in clean_symptoms.keys()
    }
-    compare_results(results, paper_results)
+    compare_results(results)
